@@ -34,10 +34,9 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
+        private int _itemQuantity;
 
-        private string _itemQuantity;
-
-        public string ItemQuantity
+        public int ItemQuantity
         {
             get { return _itemQuantity; }
             set 
