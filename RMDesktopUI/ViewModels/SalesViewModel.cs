@@ -1,6 +1,4 @@
 ﻿using Caliburn.Micro;
-using RMDesktopUI.Library.Api;
-using RMDesktopUI.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,28 +10,9 @@ namespace RMDesktopUI.ViewModels
 {
     public class SalesViewModel : Screen
     {
-        IProductEndpoint _productEndpoint;
+        private BindingList<string> _products;
 
-        public SalesViewModel(IProductEndpoint productEndpoint)
-        {
-            _productEndpoint = productEndpoint;
-        }
-
-        protected override async void OnViewLoaded(object view)
-        {
-            base.OnViewLoaded(view);
-            await LoadProducts();
-        }
-
-        private async Task LoadProducts()
-        {
-            var productList = await _productEndpoint.GetAll();
-            Products = new BindingList<ProductModel>(productList);
-        }
-
-        private BindingList<ProductModel> _products;
-
-        public BindingList<ProductModel> Products
+        public BindingList<string> Products
         {
             get { return _products; }
             set 
@@ -43,9 +22,9 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
-        private BindingList<ProductModel> _cart;
+        private BindingList<string> _cart;
 
-        public BindingList<ProductModel> Cart
+        public BindingList<string> Cart
         {
             get { return _cart; }
             set 
