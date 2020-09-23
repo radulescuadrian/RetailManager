@@ -61,6 +61,18 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
+        private CartItemModel _selectedCartItem;
+
+        public CartItemModel SelectedCartItem
+        {
+            get { return _selectedCartItem; }
+            set
+            {
+                _selectedCartItem = value;
+                NotifyOfPropertyChange(() => SelectedCartItem);
+                NotifyOfPropertyChange(() => CanRemoveFromCart);
+            }
+        }
 
         private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
 
@@ -176,24 +188,40 @@ namespace RMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => Total);
             NotifyOfPropertyChange(() => CanCheckOut);
             Cart.ResetBindings();
+            Products.ResetBindings();
         }
 
         public bool CanRemoveFromCart
         {
             get
             {
-                bool output = false;
-                //make sure something is selected
-                return output;
+                if (SelectedCartItem != null && SelectedCartItem?.Product.QuantityInStock > 0)
+                {
+                    return true;
+                }
+                return false;
             }
         }
 
         public void RemoveFromCart()
         {
+            SelectedCartItem.Product.QuantityInStock += 1;
+
+            if (SelectedCartItem.QuantityInCart > 1)
+            {
+                SelectedCartItem.QuantityInCart -= 1;
+            }
+            else
+            {
+                Cart.Remove(SelectedCartItem);
+            }
+
             NotifyOfPropertyChange(() => SubTotal);
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
             NotifyOfPropertyChange(() => CanCheckOut);
+            Cart.ResetBindings();
+            Products.ResetBindings();
         }
 
         public bool CanCheckOut
