@@ -58,8 +58,8 @@ namespace RMDataManager.Library.DataAccess
                 CashierId = cashierId
             };
 
-            
             sale.Total = sale.SubTotal + sale.Tax;
+
             #endregion
 
             using(SqlDataAccess sql = new SqlDataAccess())
