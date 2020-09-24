@@ -15,6 +15,7 @@ namespace RMDataManager.Library.DataAccess
         {
             //improve this
             # region Start filling in the models we will save to the database
+            
             List<SaleDetailDBModel> details = new List<SaleDetailDBModel>();
             ProductData products = new ProductData();
             var taxRate = ConfigHelper.GetTaxRate()/100;
@@ -44,9 +45,12 @@ namespace RMDataManager.Library.DataAccess
 
                 details.Add(saleDetail);
             }
+            
             #endregion
 
+            
             #region Create the sale model
+            
             SaleDBModel sale = new SaleDBModel
             {
                 SubTotal = details.Sum(x => x.PurchasePrice),
@@ -54,27 +58,39 @@ namespace RMDataManager.Library.DataAccess
                 CashierId = cashierId
             };
 
+            
             sale.Total = sale.SubTotal + sale.Tax;
             #endregion
 
-            #region Save the sale model
-            SqlDataAccess sql = new SqlDataAccess();
-            sql.SaveData("dbo.spSale_Insert", sale, "RMData");
-            #endregion
-
-            #region Get the ID from the sale model
-            sale.Id = sql.LoadData<int, dynamic>("spSale_Lookup", new { sale.CashierId, sale.SaleDate }, "RMData").FirstOrDefault();
-            #endregion
-
-            #region Finish filling in the sale detail models
-            foreach (var item in details)
+            using(SqlDataAccess sql = new SqlDataAccess())
             {
-                item.SaleId = sale.Id;
-                
-                //Save the sale detail models
-                sql.SaveData("dbo.spSaleDetail_Insert", item, "RMData");
+                try
+                {
+                    sql.StartTransaction("RMData");
+
+                    //Save the sale model
+                    sql.SaveDataInTransaction("dbo.spSale_Insert", sale);
+
+                    //Get the ID from the sale model
+                    sale.Id = sql.LoadDataInTransaction<int, dynamic>("spSale_Lookup", new { sale.CashierId, sale.SaleDate }).FirstOrDefault();
+
+                    //Finish filling in the sale detail models
+                    foreach (var item in details)
+                    {
+                        item.SaleId = sale.Id;
+
+                        //Save the sale detail models
+                        sql.SaveDataInTransaction("dbo.spSaleDetail_Insert", item);
+                    }
+
+                    sql.CommitTransaction();
+                }
+                catch
+                {
+                    sql.RollbackTransaction();
+                    throw;
+                }
             }
-            #endregion
         }
     }
 }
