@@ -66,7 +66,6 @@ namespace RMDataManager.Library.Internal.DataAccess
         {
             _transaction?.Commit();
             _connection?.Close();
-            _transaction.Dispose();
         }
 
         public void RollbackTransaction()
